@@ -12,6 +12,18 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
 
+    def ram_read(self, mem_address):
+        """
+        Standard CPUs contain a register called
+        Memory Address Register(MAR). MAR contains mem addreses
+        being read/written to. [Google] Memory Data Register.
+
+        """
+        return self.ram[mem_address]
+
+    def ram_write(self, mem_address, data):
+        self.ram[mem_address] = data
+
     def load(self):
         """Load a program into memory."""
 
