@@ -2,6 +2,11 @@
 
 import sys
 
+# opcodes
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
+
 
 class CPU:
     """Main CPU class."""
@@ -33,7 +38,7 @@ class CPU:
 
         program = [
             # From print8.ls8
-            0b10000010,  # LDI R0,8
+            0b10000110,  # LDI R0,8
             0b00000000,
             0b00001000,
             0b01000111,  # PRN R0
@@ -76,4 +81,21 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+
+        while True:
+            ir = self.ram[self.pc]
+            operand_a = self.ram_read(self.pc+1)
+            operand_b = self.ram_read(self.pc+2)
+
+            instruction_length = (ir >> 6) + 1
+
+            if ir == LDI:
+                self.reg[operand_a] = operand_b
+            elif ir == PRN:
+                print(self.reg[operand_a])
+            elif ir == HLT:
+                break
+            else:
+                print("I do not understand that command")
+
+            self.pc += instruction_length
