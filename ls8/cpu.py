@@ -16,6 +16,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.running = False
 
     def ram_read(self, mem_address):
         """
@@ -29,26 +30,40 @@ class CPU:
     def ram_write(self, mem_address, data):
         self.ram[mem_address] = data
 
-    def load(self):
+    def load(self, filename):
         """Load a program into memory."""
 
         address = 0
 
+        try:
+            with open(filename) as f:
+                for line in f:
+                    line_split = line.split("#")
+                    num = line_split[0].strip()
+
+                    if num == "":
+                        continue
+
+                    self.ram[address] = int(num, 2)
+
+                    address += 1
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {filename} not found!")
+            sys.exit(2)
+
         # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000110,  # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111,  # PRN R0
-            0b00000000,
-            0b00000001,  # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # program = [
+        #     # From print8.ls8
+        #     0b10000110,  # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111,  # PRN R0
+        #     0b00000000,
+        #     0b00000001,  # HLT
+        # ]
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
@@ -80,6 +95,29 @@ class CPU:
         print()
 
     def run(self):
+        """Run the CPU."""
+        while not self.running:
+            ir = self.ram[self.pc]
+            instruction_length = (ir >> 6) + 1  # (bitshifted instruction)
+            reg_num = self.ram_read(self.pc + 1)
+            value = self.ram_read(self.pc + 2)
+            # set the instruction length here (extract)
+            # halt
+            if ir == HLT:
+                self.running = True
+            # LDI
+            elif ir == LDI:
+                self.reg[reg_num] = value
+            # PRN
+            elif ir == PRN:
+                print(self.reg[reg_num])
+            elif ir == "MUL":
+                self.alu("MUL", reg_num, value)
+            else:
+                print("I don't get", [ir, reg_num])
+            self.pc += instruction_length
+
+    def runr(self):
         """Run the CPU."""
 
         while True:
