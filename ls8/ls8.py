@@ -5,8 +5,8 @@
 import sys
 from cpu import *
 
-# if len(sys.argv) != 2:
-#     raise Exception("WTF!!")
+if len(sys.argv) != 2:
+    raise Exception("You have to pass in the file to read/write")
 
 # assert(len(sys.argv) == 2), "You have to pass in a filename to read/write"
 

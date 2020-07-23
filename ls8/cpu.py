@@ -6,6 +6,12 @@ import sys
 LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
+MUL = 0b10100010
+ADD = 0b10100000
+SUB = 0b10100001
+DIV = 0b10100011
+PUSH = 0b01000101
+POP = 0b01000110
 
 
 class CPU:
@@ -17,6 +23,8 @@ class CPU:
         self.reg = [0] * 8
         self.pc = 0
         self.running = False
+        self.sp = 7             # R7, from specs
+        self.reg[self.sp] = 244     # F4, from specs
 
     def ram_read(self, mem_address):
         """
@@ -70,7 +78,13 @@ class CPU:
 
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        # elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "DIV":
+            # Floor division because we don't want to store floats. Headick!
+            self.reg[reg_a] //= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -96,29 +110,6 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        while not self.running:
-            ir = self.ram[self.pc]
-            instruction_length = (ir >> 6) + 1  # (bitshifted instruction)
-            reg_num = self.ram_read(self.pc + 1)
-            value = self.ram_read(self.pc + 2)
-            # set the instruction length here (extract)
-            # halt
-            if ir == HLT:
-                self.running = True
-            # LDI
-            elif ir == LDI:
-                self.reg[reg_num] = value
-            # PRN
-            elif ir == PRN:
-                print(self.reg[reg_num])
-            elif ir == "MUL":
-                self.alu("MUL", reg_num, value)
-            else:
-                print("I don't get", [ir, reg_num])
-            self.pc += instruction_length
-
-    def runr(self):
-        """Run the CPU."""
 
         while True:
             ir = self.ram[self.pc]
@@ -133,6 +124,15 @@ class CPU:
                 print(self.reg[operand_a])
             elif ir == HLT:
                 break
+            elif ir == ADD:
+                self.alu("ADD", operand_a, operand_b)
+            elif ir == MUL:
+                self.alu("MUL", operand_a, operand_b)
+            elif ir == SUB:
+                self.alu("SUB", operand_a, operand_b)
+            elif ir == DIV:
+                self.alu("DIV", operand_a, operand_b)
+
             else:
                 print("I do not understand that command")
 
