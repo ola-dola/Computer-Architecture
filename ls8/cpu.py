@@ -132,6 +132,22 @@ class CPU:
                 self.alu("SUB", operand_a, operand_b)
             elif ir == DIV:
                 self.alu("DIV", operand_a, operand_b)
+            elif ir == PUSH:
+                val = self.reg[operand_a]
+
+                self.reg[self.sp] -= 1   # decrement whats in R7 by 1
+                # place the `val` in memory, at the sp address
+                self.ram[self.reg[self.sp]] = val
+
+            elif ir == POP:
+                """
+                Place the value in top of stack into given register address
+                """
+                val = self.ram[self.reg[self.sp]]
+
+                self.reg[operand_a] = val
+
+                self.reg[self.sp] += 1
 
             else:
                 print("I do not understand that command")
